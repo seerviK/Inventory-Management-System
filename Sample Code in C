@@ -1,0 +1,414 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+struct InventoryItem 
+{
+    char name[50];
+    int quantity,id;
+    float price;
+    struct InventoryItem*next;
+};
+typedef struct InventoryItem node;
+struct CartItem 
+{
+    char name[50];
+    int id;
+    int quantity;
+    float price;
+    struct CartItem*next;
+};
+typedef struct CartItem cart_node;
+node*accept(int id,char name[50],int quantity,float price) 
+{
+    node*temp=(node*)malloc(sizeof(node));
+    if(temp==NULL) 
+    {
+        printf("Memory not allocated!\n");
+        exit(1);
+    }
+    strncpy(temp->name,name,sizeof(temp->name));
+    temp->id = id;
+    temp->quantity = quantity;
+    temp->price = price;
+    temp->next = NULL;
+    return temp;
+}
+node*addItem(node*head,int id,char name[50],int quantity,float price) 
+{
+    node*temp=accept(id,name,quantity,price);
+
+    if(head==NULL) 
+    {
+        return temp;
+    } 
+    else 
+    {
+        node*p=head;
+        while(p->next!=NULL) 
+        {
+            p=p->next;
+        }
+        p->next=temp;
+        return head;
+    }
+}
+node*removeItem(node*head,char nameToRemove[50]) 
+{
+    node*p=head;
+    node*q=NULL;
+    while(p!=NULL) 
+    {
+        if(strcmp(p->name,nameToRemove)==0) 
+        {
+            if(q==NULL) 
+            {
+                head=p->next;
+                free(p);
+                return head;
+            } 
+            else 
+            {
+                q->next=p->next;
+                free(p);
+                return head;
+            }
+        }
+        q=p;
+        p=p->next;
+    }
+    printf("Item with name \"%s\" not found in the inventory.\n",nameToRemove);
+    return head;
+}
+void searchItem(node*head,char itemName[50]) 
+{
+    node*p=head;
+    while(p!=NULL) 
+    {
+        if(strcmp(p->name,itemName)==0) 
+        {
+            printf("Item found in the inventory:\n");
+            printf("ID: %d\n", p->id);
+            printf("Name: %s\n", p->name);
+            printf("Quantity: %d\n", p->quantity);
+            printf("Price: %.2f\n", p->price);
+            return;
+        }
+        p=p->next;
+    }
+    printf("Item with name \"%s\" not found in the inventory.\n",itemName);
+}
+void updateItem(node*head,char itemName[50],int newQuantity,float newPrice) 
+{
+    node*p=head;
+    while(p!=NULL) 
+    {
+        if(strcmp(p->name,itemName)==0) 
+        {
+            p->quantity = newQuantity;
+            p->price = newPrice;
+            printf("Item information updated successfully:\n");
+            printf("Name: %s\n", p->name);
+            printf("New Quantity: %d\n", p->quantity);
+            printf("New Price: %.2f\n", p->price);
+            return;
+        }
+        p=p->next;
+    }
+    printf("Item with name \"%s\" not found in the inventory.\n",itemName);
+}
+float displayInventory(node*head) 
+{
+    node*p=head;
+    printf("Inventory:\n");
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    printf("|%15s | %15s | %15s | %15s | %15s |\n", "ID", "Name", "Quantity", "Price of 1 item", "Total Price");
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    float total=0.0;
+    while(p!=NULL) 
+    {
+        float itemTotal=p->quantity*p->price;
+        total+=itemTotal;
+        printf("|%15d | %15s | %15d | %15.2f | %15.2f |\n", p->id, p->name, p->quantity, p->price, itemTotal);
+        p=p->next;
+    }
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    printf("Total Price of all the items in the inventory: %.2f\n",total);
+    return total;
+}
+cart_node*acceptCartItem(int id, char name[50],int quantity,float price) 
+{
+    cart_node*temp=(cart_node*)malloc(sizeof(cart_node));
+    if(temp==NULL) 
+    {
+        printf("Memory not allocated!\n");
+        exit(1);
+    }
+    strncpy(temp->name,name,sizeof(temp->name));
+    temp->id=id;
+    temp->quantity=quantity;
+    temp->price=price;
+    temp->next=NULL;
+    return temp;
+}
+cart_node *addToCart(cart_node *cart, node *inventory, char name[50], int quantity)
+{
+    if (inventory == NULL)
+    {
+        printf("Inventory is empty!\n");
+        return cart;
+    }
+
+    int itemFound = 0;
+
+    cart_node *temp = cart;
+    while (inventory != NULL)
+    {
+        if (strcmp(inventory->name, name) == 0)
+        {
+            if (inventory->quantity >= quantity)
+            {
+                if (cart == NULL)
+                {
+                    cart = acceptCartItem(inventory->id, inventory->name, quantity, inventory->price);
+                }
+                else
+                {
+                    temp = cart;
+                    while (temp->next != NULL)
+                    {
+                        temp = temp->next;
+                    }
+                    temp->next = acceptCartItem(inventory->id, inventory->name, quantity, inventory->price);
+                }
+                inventory->quantity -= quantity;
+                printf("%s added to your cart.\n", name);
+                itemFound = 1; 
+                break; 
+            }
+            else
+            {
+                printf("Insufficient quantity in the inventory for item: %s\n", name);
+                printf("We don't have the required quantity at the moment. Restocking...\n");
+                restock(inventory, name);
+                itemFound = 1; 
+                break; 
+            }
+        }
+        inventory = inventory->next;
+    }
+
+    if (!itemFound)
+    {
+        printf("There is no such item available in our inventory: %s\n", name);
+    }
+
+    return cart;
+}
+void restock(node *head, char itemName[50])
+{
+    node *p = head;
+    while (p != NULL)
+    {
+        if (strcmp(p->name, itemName) == 0)
+        {
+            p->quantity += 100;
+            printf("Restocked %s by 100 units. New quantity: %d\n", p->name, p->quantity);
+            return;
+        }
+        p = p->next;
+    }
+}
+float displayCart(cart_node*cart) 
+{
+    cart_node*temp=cart;
+    printf("Your Cart:\n");
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    printf("|%15s | %15s | %15s | %15s | %15s |\n", "ID", "Name", "Quantity", "Price of 1 item", "Total price");
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    float Total=0.0;
+    while (temp!=NULL) 
+    {
+        float ItemTotal=temp->quantity*temp->price;
+        Total+=ItemTotal;
+        printf("|%15d | %15s | %15d | %15.2f | %15.2f |\n", temp->id, temp->name, temp->quantity, temp->price, ItemTotal);
+        temp=temp->next;
+    }
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    printf("Total price of all the items in the cart: %.2f\n",Total);
+    return Total;
+}
+cart_node*removeFromCart(cart_node*cart,node**inventory,char nameToRemove[50]) 
+{
+    cart_node*p=cart;
+    cart_node*q=NULL;
+
+    while(p!=NULL) 
+    {
+        if(strcmp(p->name,nameToRemove)==0) 
+        {
+            node*inventoryPtr=*inventory;
+            while(inventoryPtr!=NULL) 
+            {
+                if(strcmp(inventoryPtr->name,nameToRemove)==0) 
+                {
+                    inventoryPtr->quantity+=p->quantity;
+                    break;
+                }
+                inventoryPtr=inventoryPtr->next;
+            }
+            if(q==NULL) 
+            {
+                cart=p->next;
+                free(p);
+                return cart;
+            } 
+            else 
+            {
+                q->next=p->next;
+                free(p);
+                return cart;
+            }
+        }
+        q=p;
+        p=p->next;
+    }
+    printf("Item with name \"%s\" not found in your cart.\n",nameToRemove);
+    return cart;
+}
+void generateBill(cart_node *cart) 
+{
+    printf("Generating Bill:\n");
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    printf("|%15s | %15s | %15s | %15s | %15s |\n", "ID", "Name", "Quantity", "Price of 1 item", "Total price");
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    float totalCost = 0.0;
+    cart_node *temp = cart;
+    while (temp != NULL) 
+    {
+        float itemTotal = temp->quantity * temp->price;
+        totalCost += itemTotal;
+        printf("|%15d | %15s | %15d | %15.2f | %15.2f |\n", temp->id, temp->name, temp->quantity, temp->price, itemTotal);
+        temp = temp->next;
+    }
+    printf("+----------------+-----------------+-----------------+-----------------+-----------------+\n");
+    printf("Total cost of all items: %.2f\n", totalCost);
+    printf("Thank you for shopping!\n");
+}
+int main() 
+{
+    printf("\n");
+    printf("\n");
+    printf(" -----------------------------------------------------------------------------------------\n");
+    printf("| _______                          ______             _______   _____    ____  *       /  |\n");
+    printf("|    |       |*      |  *      /  |        |*      |     |     |     |  |    |   *   /    |\n");
+    printf("|    |       |  *    |   *    /   |______  |  *    |     |     |     |  |____|     */     |\n");
+    printf("|    |       |    *  |    *  /    |        |    *  |     |     |     |  | *        |      |\n");
+    printf("| ___|___    |      *|     */     |______  |      *|     |     |_____|  |   *      |      |\n");
+    printf("|                                                                                         |\n");
+    printf(" ------------------------------------------------------------------------------------------------------\n");
+    printf("     |                                                                                                 |\n");
+    printf("     | |*    /|   _____               _____    ______    _____             _____              _______  |\n");
+    printf("     | | *  / |  |     |  |*      |  |     |  |         |       |*    /|  |        |*      |     |     |\n");
+    printf("     | |  */  |  |_____|  |  *    |  |_____|  |______   |_____  | *  / |  |_____   |  *    |     |     |\n");
+    printf("     | |      |  |     |  |    *  |  |     |  |   |  |  |       |  */  |  |        |    *  |     |     |\n");
+    printf("     | |      |  |     |  |      *|  |     |  |___|  |  |_____  |      |  |_____   |      *|     |     |\n");
+    printf("     |                                                                                                 |\n");
+    printf("      -------------------------------------------------------------------------------------------------\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    node*head=NULL;
+    cart_node*customerCart=NULL;
+    int choice;
+    int id;
+    char nameToRemove[50];
+    char name[50];
+    int quantity;
+    float price;
+    while(1) 
+    {
+        printf("\n");
+        printf("*******************************************\n");
+        printf("*  -------------------------------------  *\n");
+        printf("* | Medical Inventory Management System | *\n");
+        printf("*  -------------------------------------  *\n");
+        printf("*    1. Add Item to Inventory             *\n");
+        printf("*    2. Remove Item from Inventory        *\n");
+        printf("*    3. Search for an Item                *\n");
+        printf("*    4. Update Item Information           *\n");
+        printf("*    5. Display Inventory                 *\n");
+        printf("*       ----------------------------      *\n");
+        printf("*      |      Customer's Cart       |     *\n");
+        printf("*      |    6. Add Item to Cart     |     *\n");
+        printf("*      |7. Remove item from the cart|     *\n");
+        printf("*      |     8. Display cart        |     *\n");
+        printf("*      |    9. Generate Bill        |     *\n");
+        printf("*       ----------------------------      *\n");
+        printf("*    10. Exit                             *\n");
+        printf("*******************************************\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        switch (choice) 
+        {
+            case 1:
+                printf("Enter Product ID: ");
+                scanf("%d",&id);
+                printf("Enter item name: ");
+                scanf("%s",name);
+                printf("Enter quantity: ");
+                scanf("%d",&quantity);
+                printf("Enter price: ");
+                scanf("%f",&price);
+                head=addItem(head,id,name,quantity,price);
+                printf("%s added to inventory.\n",name);
+                break;
+            case 2:
+                printf("Enter item name to remove: ");
+                scanf("%s",nameToRemove);
+                head=removeItem(head,nameToRemove);
+                printf("%s Removed from the Inventory.\n",nameToRemove);
+                break;
+            case 3:
+                printf("Enter item name to search: ");
+                scanf("%s",name);
+                searchItem(head,name);
+                break;
+            case 4:
+                printf("Enter item name to update: ");
+                scanf("%s",name);
+                printf("Enter new quantity: ");
+                scanf("%d",&quantity);
+                printf("Enter new price: ");
+                scanf("%f",&price);
+                updateItem(head,name,quantity,price);
+                break;
+            case 5:
+                displayInventory(head);
+                break;
+            case 6:
+                printf("Enter item name to add to your cart: ");
+                scanf("%s",name);
+                printf("Enter the quantity you want to buy: ");
+                scanf("%d",&quantity);
+                customerCart=addToCart(customerCart,head,name,quantity);
+                break;
+            case 7:
+                printf("Enter item name to remove from your cart: ");
+                scanf("%s",nameToRemove);
+                customerCart=removeFromCart(customerCart,&head,nameToRemove);
+                printf("%s removed from your cart.\n",nameToRemove);
+                break;
+            case 8:
+                displayCart(customerCart);
+                break;
+            case 9:
+                generateBill(customerCart);
+                break;
+            case 10:
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+    return 0;
+}
