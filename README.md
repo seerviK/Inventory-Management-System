@@ -1,7 +1,6 @@
-# 🏥 Medical Inventory Management System
+# 🏥 Medical Inventory Management System using Data Structures (Queue, Linked List)
 
-Welcome to the **Medical Inventory Management System**, a streamlined solution for managing inventory in medical environments such as hospitals, pharmacies, and clinics. This system offers essential inventory control features along with a shopping cart feature, allowing users to manage products, keep track of quantities, and generate bills for items in the cart.
-
+Welcome to the **Medical Inventory Management System**, I have created this system suing core C language to implement the use of data structures like queue and linked list. Adding an element, deleting and updating is performed in the above project
 ## 🌟 Features
 
 ### Inventory Management
@@ -43,25 +42,10 @@ Prerequisites
 
 📜 Sample Output
 
-*******************************************
-*  -------------------------------------  *
-* | Medical Inventory Management System | *
-*  -------------------------------------  *
-*    1. Add Item to Inventory             *
-*    2. Remove Item from Inventory        *
-*    3. Search for an Item                *
-*    4. Update Item Information           *
-*    5. Display Inventory                 *
-*       ----------------------------      *
-*      |      Customer's Cart       |     *
-*      |    6. Add Item to Cart     |     *
-*      |7. Remove item from the cart|     *
-*      |     8. Display cart        |     *
-*      |    9. Generate Bill        |     *
-*       ----------------------------      *
-*    10. Exit                             *
-*******************************************
-Enter your choice:
+![image](https://github.com/user-attachments/assets/c220f14a-aa1c-4fb5-9614-aac7a51e4b36)
+
+![image](https://github.com/user-attachments/assets/6270abb4-85eb-43a4-96b6-a1bac320c4de)
+
 
 🔧 Future Improvements
  - Implement a user login system with different roles (admin, customer).
